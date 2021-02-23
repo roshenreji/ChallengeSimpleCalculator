@@ -80,13 +80,13 @@ pipeline {
             post {
                 always {
                     //junit '**/target/surefire-reports/TEST-*.xml'
-                    archiveArtifacts 'SimpleCalculatorChallenge/target/*.jar'
+                    archiveArtifacts 'SampleCalculatorChallenge/target/*.jar'
                      }
                 }
              }
             stage('collect artifact'){
                 steps{
-                    archiveArtifacts artifacts: 'SimpleCalculatorChallenge/target/*.jar', followSymlinks: false
+                    archiveArtifacts artifacts: 'SampleCalculatorChallenge/target/*.jar', followSymlinks: false
                  }
             }      
          stage('deploy to artifactory')
@@ -98,7 +98,7 @@ pipeline {
                     spec: '''{
                     "files": [
                          {
-                             "pattern": "SimpleCalculatorChallenge/target/*.jar",
+                             "pattern": "SampleCalculatorChallenge/target/*.jar",
                              "target": "art-doc-dev-loc-new/sample/"
                         }
                      ]
