@@ -1,0 +1,115 @@
+pipeline {
+     agent any
+    tools{
+        maven 'maven'
+        jdk 'Jdk'
+    }
+    stages{
+          stage('Fetch') {
+            steps {
+               sh 'echo $JOB_NAME'
+                sh 'echo $BUILD_NUMBER'
+                sh 'echo Fetch'
+               git branch: 'master', url: 'https://github.com/roshenreji/ChallengeSimpleCalculator.git'
+            }
+        }
+        
+        stage('Clean'){
+            steps{
+                dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                    sh 'echo Clean'
+                    sh 'mvn  clean'
+                }
+            }
+        }
+        stage('Validate'){
+                steps{
+                     dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                
+                        sh 'mvn  validate'
+                     }
+                }
+            
+         }
+        stage('Compile'){
+                steps{
+                     dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                 
+                        sh 'echo Compile'
+                         sh 'mvn  compile'
+                     }
+                }
+            
+        }
+        stage('Sonar Analysis'){
+            steps{
+                 dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                    withSonarQubeEnv('Sonar'){
+                        withMaven(maven:'maven'){
+                            sh 'mvn sonar:sonar'
+                        }
+                        
+                  }
+                }
+            }
+            
+        }
+        
+             stage('Test'){
+                 steps {
+                      dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                         sh 'echo Test'
+                         sh 'mvn test'
+                      }
+                 }
+                 post{
+                     always {
+                         junit '**/target/surefire-reports/TEST-*.xml'
+                     }
+                 }
+            }
+            stage('Build'){
+            steps {
+                 dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SimpleCalculatorChallenge"){
+                
+                        sh 'echo Build'
+                        sh 'mvn  package'
+                 }
+            }
+            
+            post {
+                always {
+                    //junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'SimpleCalculatorChallenge/target/*.jar'
+                     }
+                }
+             }
+            stage('collect artifact'){
+                steps{
+                    archiveArtifacts artifacts: 'SimpleCalculatorChallenge/target/*.jar', followSymlinks: false
+                 }
+            }      
+         stage('deploy to artifactory')
+         {
+            steps{
+     
+                rtUpload (
+                    serverId: 'JfrogId',
+                    spec: '''{
+                    "files": [
+                         {
+                             "pattern": "SimpleCalculatorChallenge/target/*.jar",
+                             "target": "art-doc-dev-loc-new/sample/"
+                        }
+                     ]
+                }''',
+ 
+  
+    buildName: 'Build1',
+    buildNumber: '1'
+)
+     }}
+     
+        
+    }
+}
