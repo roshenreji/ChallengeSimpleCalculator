@@ -59,24 +59,8 @@ pipeline {
                      }
                  }
             }
-            stage('Build'){
-            steps {
-                 dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SampleCalculatorChallenge"){
-                
-                        sh 'echo Build'
-                        sh 'mvn  package -Dbuild.number=-${BUILD_NUMBER}'
-                 }
-            }
-            
-            post {
-                always {
-                    //junit '**/target/surefire-reports/TEST-*.xml'
-                    archiveArtifacts 'SampleCalculatorChallenge/target/*.jar'
-                     }
-                }
-             }
 
-             stage('Sonar Analysis'){
+            stage('Sonar Analysis'){
             steps{
                  dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SampleCalculatorChallenge"){
                     withSonarQubeEnv('Sonar'){
@@ -103,6 +87,24 @@ pipeline {
                 }
             }
         }
+            stage('Build'){
+            steps {
+                 dir("C:/Users/roshe/.jenkins/workspace/CIChallenge1/SampleCalculatorChallenge"){
+                
+                        sh 'echo Build'
+                        sh 'mvn  package -Dbuild.number=-${BUILD_NUMBER}'
+                 }
+            }
+            
+            post {
+                always {
+                    //junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'SampleCalculatorChallenge/target/*.jar'
+                     }
+                }
+             }
+
+             
             stage('collect artifact'){
                 steps{
                     archiveArtifacts artifacts: 'SampleCalculatorChallenge/target/*.jar', followSymlinks: false
@@ -124,7 +126,27 @@ pipeline {
                 }''',
  
   
-    buildName: 'Build1',
+    
+)
+     }}
+
+     stage('download from artifactory')
+         {
+            steps{
+     
+                rtDownload (
+                    serverId: 'JfrogId',
+                    spec: '''{
+                    "files": [
+                         {
+                             "pattern": "art-doc-dev-loc-new/sample/",
+                             "target": "SampleCalculatorChallenge/"
+                        }
+                     ]
+                }''',
+ 
+  
+    buildName: 'Build2',
     buildNumber: '1'
 )
      }}
